@@ -1,0 +1,26 @@
+  /*
+
+  for customizing login and logout
+
+      @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(authz -> authz
+                .antMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                .antMatchers("/user/**").hasAuthority("ROLE_USER")
+                .anyRequest().authenticated())
+            .formLogin(form -> form
+                .loginPage("/login")
+                .successHandler(customAuthenticationSuccessHandler())
+                .permitAll())
+            .logout(logout -> logout
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .logoutSuccessUrl("/login?logout")
+                .permitAll())
+            .exceptionHandling(exception -> exception
+                .accessDeniedPage("/error"));
+
+        return http.build();
+    }
+
+  * */
