@@ -10,11 +10,12 @@ import java.security.Key;
 import java.util.Date;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenUtil {
-  protected static final String SECRET_KEY = Generator.generateDynamicSecretKey();
-  protected static final String REFRESH_SECRET_KEY = Generator.generateDynamicSecretKey();
+  public static final String SECRET_KEY = Generator.generateDynamicSecretKey();
+  public static final String REFRESH_SECRET_KEY = Generator.generateDynamicSecretKey();
   private static final long ACCESS_TOKEN_EXPIRY = 15 * 60 * 1000;
   private static final long REFRESH_TOKEN_EXPIRY = 7 * 24 * 15 * 60 * 1000;
 
@@ -32,6 +33,15 @@ public class JwtTokenUtil {
         .signWith(getSigningKey(SECRET_KEY))
         .compact();
   }
+
+  public String refreshAccessToken(String refreshToken) {
+    if (!isTokenValid(refreshToken, REFRESH_SECRET_KEY)) {
+      throw new IllegalArgumentException("Invalid refresh token");
+    }
+    Claims claims = extractAllClaims(refreshToken, REFRESH_SECRET_KEY);
+    return generateAccessToken(claimsToMap(claims), claims.getSubject());
+  }
+
 
   public String generateRefreshToken(Map<String, String> claims, String subject){
     return Jwts.builder()
@@ -72,5 +82,10 @@ public class JwtTokenUtil {
        .build()
        .parseSignedClaims(token)
        .getPayload();
+  }
+
+  private Map<String, String> claimsToMap(Claims claims) {
+    return claims.entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, entry -> String.valueOf(entry.getValue())));
   }
 }

@@ -1,5 +1,6 @@
 package com.role.auth.controller;
 
+import com.role.auth.security.service.TokenService;
 import com.role.auth.security.annotation.Admin;
 import com.role.auth.security.annotation.User;
 import jakarta.servlet.RequestDispatcher;
@@ -12,6 +13,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class RoleController {
+
+  private final TokenService tokenService;
+
+  public RoleController(TokenService tokenService) {
+    this.tokenService = tokenService;
+  }
 
   @Admin
   @GetMapping("/")
@@ -27,6 +34,8 @@ public class RoleController {
   @GetMapping("/admin")
   public String admin(Model model, Authentication authentication) {
     model.addAttribute("userName", authentication.getName());
+    String accessToken = tokenService.generateAccessToken(authentication.getName());
+    model.addAttribute("accessToken", accessToken);
     return "admin";
   }
 
@@ -34,6 +43,8 @@ public class RoleController {
   @GetMapping("/user")
   public String user(Model model, Authentication authentication) {
     model.addAttribute("userName", authentication.getName());
+    String accessToken = tokenService.generateAccessToken(authentication.getName());
+    model.addAttribute("accessToken", accessToken);
     return "user";
   }
 

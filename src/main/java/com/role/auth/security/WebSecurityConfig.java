@@ -1,5 +1,6 @@
 package com.role.auth.security;
 
+import com.role.auth.security.service.jwt.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -15,6 +16,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
@@ -23,7 +25,7 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 public class WebSecurityConfig {
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
     http.authorizeHttpRequests(
             auth -> auth
                 .requestMatchers("/admin/**")
@@ -42,7 +44,9 @@ public class WebSecurityConfig {
             .successHandler(authenticationSuccessHandler())
             .permitAll())
         .logout(LogoutConfigurer::permitAll)
-        .exceptionHandling(exception -> exception.accessDeniedPage("/error"));
+        .exceptionHandling(exception -> exception.accessDeniedPage("/error"))
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
 
     return http.build();
   }
@@ -56,7 +60,7 @@ public class WebSecurityConfig {
         .build();
     UserDetails admin = User
         .withUsername("admin")
-        .password(passwordEncoder.encode("password"))
+        .password(passwordEncoder.encode("admin"))
         .roles("ADMIN")
         .build();
     return new InMemoryUserDetailsManager(user, admin);
